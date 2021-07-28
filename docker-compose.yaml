@@ -4,15 +4,15 @@ services:
         build:
             context: node
         container_name: app
-        networks: 
-            - node-network
+        entrypoint: dockerize -wait tcp://db:3306 -timeout 20s docker-entrypoint.sh node index.js
         volumes:
             - ./node:/usr/src/app
         tty: true
-        ports:
-            - "3000:3000"
         depends_on: 
             - db
+        networks:
+            - fullcylcle
+
     db:
         image: mysql:5.7
         command: --innodb-use-native-aio=0
@@ -20,14 +20,28 @@ services:
         restart: always
         tty: true
         volumes:
-            - ./mysql:/var/lib/mysql
+            - ./mysql/db:/var/lib/mysql
+            - ./mysql/script:/docker-entrypoint-initdb.d
         environment: 
-            - MYSQL_DATABASE=nodedb
+            - MYSQL_DATABASE=fullcycle
             - MYSQL_ROOT_PASSWORD=root
-        ports:
-            - "3306:3306"
         networks: 
-            - node-network
+            - fullcylcle
+
+    nginx:
+        build:
+            context: nginx
+        container_name: nginx
+        entrypoint: dockerize -wait tcp://app:3000 -timeout 20s /docker-entrypoint.sh nginx -g 'daemon off;'
+        restart: always
+        tty: true
+        depends_on:
+            - app
+        ports:
+            - "8080:80"
+        networks:
+            - fullcylcle
+    
 networks:
-    node-network:
+    fullcylcle:
         driver: bridge
