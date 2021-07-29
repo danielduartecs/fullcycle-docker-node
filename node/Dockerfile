@@ -3,18 +3,13 @@ FROM node:15
 # Criando diretorio da aplicacao
 WORKDIR /usr/src/app
 
-# Copiando pacotes de dependencias
-COPY package.json ./
+# Copiando arquivos
+COPY . .
 
 # Instalando dependencias
 RUN npm install
-
-# Copiando arquivos gerados
-COPY . .
 
 # Baixando o dockerize
 RUN wget https://github.com/jwilder/dockerize/releases/download/v0.6.1/dockerize-linux-amd64-v0.6.1.tar.gz \
   && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-v0.6.1.tar.gz \
   && rm dockerize-linux-amd64-v0.6.1.tar.gz
-
-CMD [ "node", "index.js" ]
